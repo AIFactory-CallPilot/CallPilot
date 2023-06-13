@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "voicetotext"
+name = "voice_to_text"
 version = "0.1.0"
 description = ""
 authors = ["inspirit941 <inspirit941@gmail.com>"]
@@ -7,8 +7,15 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+ffmpeg = "^1.4"
+openai-whisper = "^20230314"
+#triton = {git = "git@github.com:openai/triton.git", subdirectory = "python"}
+ffmpeg-python = "^0.2.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "voice_to_text.main:main"
