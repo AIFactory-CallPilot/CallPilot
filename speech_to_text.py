@@ -1,8 +1,9 @@
 import whisper
 
-model = whisper.load_model("small")
-result = model.transcribe("./[수정]20210123 153723.mp3")
-print(result['text'])
+
+def speech_to_text(model: whisper.Whisper, name: str) -> str:
+    result = model.transcribe(name)
+    return result['text']
 
 # small 응답
 # 할아버지 핸드폰을 바꿔드리려고 하는데 궁금한 점이 있어요. 네, 무엇이 궁금하신가요? 어르신 맞춤형 스마트폰 보급사업이 있던데 그게 뭐예요?어떻게 돼요? 만 65세 이상 서울 시민이면 누구나
