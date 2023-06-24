@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  amzlinux:
+    build:
+      context: ../
+      dockerfile: ./deploy/Dockerfile
+    volumes:
+      - './dist:/home/dist'
+    command: './entrypoint.sh'
