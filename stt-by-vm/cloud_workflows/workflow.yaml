@@ -1,0 +1,58 @@
+main:
+  params: [event]
+  steps:
+      - init:
+          assign:
+          - projectId: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - region: "asia-northeast3"
+          - imageUri: ${region + "-docker.pkg.dev/" + projectId + "/voice-to-text/stt-by-vm"}
+          - jobId: ${"job-primegen-" + string(int(sys.now()))}
+          - bucket: ${event.data.bucket}
+          - object: ${event.data.name}
+          - firestore_collection: "voice_to_text"
+      - logCreateBatchJob:
+          call: sys.log
+          args:
+            data: ${"Creating and running the batch job " + jobId}
+      - createAndRunBatchJob:
+          call: googleapis.batch.v1.projects.locations.jobs.create
+          args:
+            parent: ${"projects/" + projectId + "/locations/" + region}
+            jobId: ${jobId}
+            body:
+              taskGroups:
+                taskSpec:
+                  "computeResource":
+                    "cpuMilli": "2000"
+                    "memoryMib": "4096" # 최소 4GB 이상의 메모리 필요
+                  runnables:
+                    - container:
+                        imageUri: ${imageUri}
+                      environment:
+                        variables:
+                          BUCKET_NAME: ${bucket}
+                          OBJECT_NAME: ${object}
+                          FIRESTORE_COLLECTION: ${firestore_collection}
+                # Run 1 tasks on 1 VMs
+                taskCount: 1
+              allocationPolicy:
+                instances:
+                  - policy:
+                      # provisioningModel: "SPOT"
+                      machineType: "e2-medium" # 최소 메모리 4GB인 GCP VM.
+              logsPolicy:
+                destination: CLOUD_LOGGING
+          result: createAndRunBatchJobResponse
+      - logDeleteBatchJob:
+          call: sys.log
+          args:
+            data: ${"Deleting the batch job " + jobId}
+      - deleteBatchJob:
+          call: googleapis.batch.v1.projects.locations.jobs.delete
+          args:
+            name: ${"projects/" + projectId + "/locations/" + region + "/jobs/" + jobId}
+          result: deleteResult
+      - return_bucket_object:
+          return:
+            bucket: ${bucket}
+            result: ${createAndRunBatchJobResponse}

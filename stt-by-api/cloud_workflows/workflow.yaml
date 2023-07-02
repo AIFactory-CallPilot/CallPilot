@@ -1,0 +1,45 @@
+main:
+  params: [event]
+  steps:
+      - init:
+          assign:
+          - projectId: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - region: "asia-northeast3"
+          - bucket: ${event.data.bucket}
+          - jobId: ${"job-workflow-with-api-" + string(int(sys.now()))}
+          - object: ${event.data.name}
+          - firestore_collection: "voice_to_text"
+      - logBeforeExecute:
+          call: sys.log
+          args:
+            data: ${"workflow-with-api-" + jobId}
+      - voiceToText:
+          call: http.post
+          args:
+            url: https://asia-northeast3-airy-environs-390809.cloudfunctions.net/stt_api
+            headers:
+              Content-Type: "application/json"
+            auth:
+              type: OIDC
+            body:
+              bucket: ${bucket}
+              object: ${object}
+              collection: ${firestore_collection}
+          result: voiceToText
+      - summarize:
+          call: http.post
+          args:
+            url: https://summarize-sm7wohjfua-du.a.run.app
+            headers:
+              Content-Type: "application/json"
+            auth:
+              type: OIDC
+            body:
+              bucket: ${bucket}
+              object: ${object}
+              collection: ${firestore_collection}
+          result: summarize
+      - success:
+          return:
+            bucket: ${bucket}
+            result: ${summarize}
