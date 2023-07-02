@@ -26,7 +26,20 @@ main:
               object: ${object}
               collection: ${firestore_collection}
           result: voiceToText
-      - return_bucket_object:
+      - summarize:
+          call: http.post
+          args:
+            url: https://summarize-sm7wohjfua-du.a.run.app
+            headers:
+              Content-Type: "application/json"
+            auth:
+              type: OIDC
+            body:
+              bucket: ${bucket}
+              object: ${object}
+              collection: ${firestore_collection}
+          result: summarize
+      - success:
           return:
             bucket: ${bucket}
-            result: ${voiceToText}
+            result: ${summarize}
