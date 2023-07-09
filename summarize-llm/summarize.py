@@ -37,19 +37,26 @@ def process(payload: Payload):
 
 
 def summarize(text: str):
-    # template = """
-    # Write a summary of the conversation. This is Telephone Consultation between two persons.
-    #
-    # {text}
-    #
-    # Answer in Korean:
-    # """
-    # prompt = PromptTemplate(template=template, input_variables=['text'])
-    # summary_chain = load_summarize_chain(llm=llm, chain_type="stuff", prompt=prompt, verbose=True)
-    # docs = [Document(page_content=text)]
-    #
-    # summary_result = summary_chain.run(docs)
-    summary_result = "test"
+    template = """
+    You are a CSR of Seoul City service call center. You will read conversation between customer and CSR.
+    Write a summary of following conversation. 
+    
+    Conversation: {text}
+
+    Format must be one sentence of "질문" , one paragraph of "답변" . 
+    Summarize it in Korean, with periodic style. You must summarize "질문" in only one sentence.  
+    "답변" could be more than one sentence, but concise.
+    If there are any specific price, number or name in counselor's answer, mention it. 
+    "답변" should be less than 500 bytes length.
+    
+    질문:
+    답변:
+    """
+    prompt = PromptTemplate(template=template, input_variables=['text'])
+    summary_chain = load_summarize_chain(llm=llm, chain_type="stuff", prompt=prompt, verbose=True)
+    docs = [Document(page_content=text)]
+
+    summary_result = summary_chain.run(docs)
     return summary_result
 
 
